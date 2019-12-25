@@ -1,4 +1,4 @@
-/* Creating table */
+/* Creating database */
 CREATE DATABASE RollupAndCube;
 USE RollupAndCube;
 
