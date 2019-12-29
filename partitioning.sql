@@ -1,6 +1,4 @@
 /* Creating table */
-
-DROP TABLE SalesInformation;
 CREATE TABLE SalesInformation
 (
   SaleId INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
@@ -56,7 +54,6 @@ END;
 
 
 /* Creating a table without partitions */
-DROP TABLE SalesInformationNotPartitioned;
 CREATE TABLE SalesInformationNotPartitioned
 (
   SaleId INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
@@ -99,8 +96,7 @@ BEGIN
   END LOOP;
 END;
 
-/* Creating a table with partitions*/
-DROP TABLE SalesInformationPartitioned;
+/* Creating a new table with partitions */
 CREATE TABLE SalesInformationPartitioned
 (
   SaleId INTEGER,
@@ -123,23 +119,15 @@ CREATE TABLE SalesInformationPartitioned
     PARTITION OtherCountry VALUES(DEFAULT)
 );
 
-/* Checking for the possibility of migration*/
+/* Checking for the possibility of migration */
 BEGIN
    DBMS_REDEFINITION.can_redef_table('NAMDB', 'SalesInformationNotPartitioned');
 end;
 
-/* Migrating data*/
+/* Migrating data to the newly created table with partitions*/
 BEGIN
   DBMS_REDEFINITION.start_redef_table(
     uname      => 'NAMDB',
     orig_table => 'SalesInformationNotPartitioned',
     int_table  => 'SalesInformationPartitioned');
 END;
-
-
-
-
-
-
-
-
