@@ -56,14 +56,15 @@ END;
 
 
 /* Creating a table without partitions */
-
+DROP TABLE SalesInformationNotPartitioned;
 CREATE TABLE SalesInformationNotPartitioned
 (
   SaleId INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
   Product VARCHAR(20),
   Year INTEGER,
   Country VARCHAR(20),
-  Sales DECIMAL
+  Sales DECIMAL,
+  PRIMARY KEY (SaleId)
 );
 
 /* Filling data */
@@ -98,9 +99,17 @@ BEGIN
   END LOOP;
 END;
 
-/* Adding Partitions */
-ALTER TABLE SalesInformationNotPartitioned MODIFY
-    PARTITION BY LIST(Country)(
+/* Creating a table with partitions*/
+DROP TABLE SalesInformationPartitioned;
+CREATE TABLE SalesInformationPartitioned
+(
+  SaleId INTEGER,
+  Product VARCHAR(20),
+  Year INTEGER,
+  Country VARCHAR(20),
+  Sales DECIMAL,
+  PRIMARY KEY(SaleId)
+) PARTITION BY LIST (Country)(
     PARTITION Country1 VALUES('Country1'),
     PARTITION Country2 VALUES('Country2'),
     PARTITION Country3 VALUES('Country3'),
@@ -114,26 +123,23 @@ ALTER TABLE SalesInformationNotPartitioned MODIFY
     PARTITION OtherCountry VALUES(DEFAULT)
 );
 
+/* Checking for the possibility of migration*/
+BEGIN
+   DBMS_REDEFINITION.can_redef_table('NAMDB', 'SalesInformationNotPartitioned');
+end;
+
+/* Migrating data*/
+BEGIN
+  DBMS_REDEFINITION.start_redef_table(
+    uname      => 'NAMDB',
+    orig_table => 'SalesInformationNotPartitioned',
+    int_table  => 'SalesInformationPartitioned');
+END;
 
 
 
 
 
 
-SELECT * FROM SALESINFORMATION PARTITION(Country1) WHERE Year = 2010;
-SELECT * FROM  SalesInformationNotPartitioned ORDER BY SaleId;
 
-CREATE TABLE Partitiontest(
-    SaleId INTEGER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) NOT NULL,
-    ProductName VARCHAR(25),
-    Country VARCHAR(25)
-)
- PARTITION BY LIST (Country) (
-   PARTITION C1 VALUES('c1')
- );
 
-INSERT  INTO PARTITIONTEST(ProductName, Country) VALUES ('Product2', 'c3');
-
-SELECT * FROM ALL_PART_TABLES WHERE TABLE_NAME = 'SalesInformationNotPartitioned';
-
-DROP TABLE Partitiontest;
